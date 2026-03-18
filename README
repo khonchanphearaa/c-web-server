@@ -1,0 +1,91 @@
+c web-server
+
+This c web-server  is a lightweight, production-style HTTP/1.1 web server written entirely in pure C11 using POSIX sockets. It has zero external dependencies — only the C standard library and POSIX APIs are used.
+
+The goal of this project is to demonstrate how a real HTTP server works from the ground up: raw TCP sockets, manual HTTP request parsing, routing, response building, static file serving, and structured logging — all implemented without any framework or library abstractions.
+
+Architecture
+
+                                    Client (Browser / curl / Postman)
+                                            │
+                                            │  TCP Connection
+                                            ▼
+                                    ┌─────────────────────────────────────┐
+                                    │              server.c               │
+                                    │  socket() → bind() → listen()       │
+                                    │  accept() → read() → close()        │
+                                    └──────────────┬──────────────────────┘
+                                                │  raw HTTP bytes
+                                                ▼
+                                    ┌─────────────────────────────────────┐
+                                    │               http.c                │
+                                    │  http_parse_request()               │
+                                    │  → method, path, headers, body      │
+                                    └──────────────┬──────────────────────┘
+                                                │  HttpRequest struct
+                                                ▼
+                                    ┌─────────────────────────────────────┐
+                                    │              router.c               │
+                                    │  router_dispatch()                  │
+                                    │  → match method + path              │
+                                    │  → call handler function            │
+                                    └──────────────┬──────────────────────┘
+                                                │  int client_fd + HttpRequest*
+                                                ▼
+                                    ┌─────────────────────────────────────┐
+                                    │          handler function           │
+                                    │  (defined in server.c)              │
+                                    │  → build JSON / HTML response       │
+                                    │  → http_send_json() / html()        │
+                                    └──────────────┬──────────────────────┘
+                                                │  HTTP response bytes
+                                                ▼
+                                            Client receives response
+
+
+Request Lifecycle
+
+1. Client opens a TCP connection to the server
+2. accept() returns a client file descriptor
+3. read() reads the raw HTTP request bytes into a buffer
+4. http_parse_request() parses the buffer into an HttpRequest struct
+5. The router matches the method and path to a registered handler
+6. The handler builds a response and writes it to the client file descriptor
+7. The connection is closed
+
+
+How to Get Started
+
+Requirements
+GCC     9+      C compiler
+make    3.8+    Build system
+bash    4+      Running testing script
+
+On Ubuntu / Debian:
+```bash
+sudo apt update
+sudo apt install gcc make curl -y
+```
+
+On macOS (with Homebrew):
+```bash
+brew install gcc make curl
+```
+
+Build and Run
+```bash
+# git clone
+git clone https://github.com/username/cwebserver.git
+cd cweb-server
+
+# Compiler
+make
+
+# Run on port default 8080
+./web_server
+
+```
+
+Stop the Server
+Press Ctrl+C. The server handles SIGINT and SIGTERM cleanly — it shuts down the router, closes the socket, and flushes the log file.
+
