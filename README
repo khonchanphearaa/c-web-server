@@ -62,18 +62,18 @@ make    3.8+    Build system
 bash    4+      Running testing script
 
 On Ubuntu / Debian:
-```bash
+
 sudo apt update
 sudo apt install gcc make curl -y
-```
+
 
 On macOS (with Homebrew):
-```bash
+
 brew install gcc make curl
-```
+
 
 Build and Run
-```bash
+
 # git clone
 git clone https://github.com/username/cwebserver.git
 cd cweb-server
@@ -84,7 +84,6 @@ make
 # Run on port default 8080
 ./web_server
 
-```
 
 Stop the Server
 Press Ctrl+C. The server handles SIGINT and SIGTERM cleanly — it shuts down the router, closes the socket, and flushes the log file.
